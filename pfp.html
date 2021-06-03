@@ -47,11 +47,13 @@
     <title>Pride Profile Picture Generator</title>
     </head>
     <body theme="dark">
+        <h1>Profile Picture Generator</h1>
+        <h2>Add a pride flag to your profile picture</h2>
         <div id="inputDiv">
             <div class="inputFieldDiv">
                 <label>Profile Image File:</label>
                 <img class="thumbnail" id="customImg" />
-                <input type="file" id="imageLoader" name="imageLoader"/>
+                <input type="file" id="imageLoader" name="imageLoader" title="Upload a foreground profile picture image" />
             </div>
             <div class="inputFieldDiv">
                 <label>Flag Image File:</label>
@@ -69,7 +71,7 @@
                     <option value="pan.jpg">Pan</option>
                     <option value="trans.jpg">Trans</option>
                 </select>
-                <input type="file" id="flagLoader" name="flagLoader"/>
+                <input type="file" id="flagLoader" name="flagLoader" title="Upload a custom pride flag background image" />
             </div>
             <div class="inputFieldDiv">
                 <label>Border size:</label>
