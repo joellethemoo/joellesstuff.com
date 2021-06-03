@@ -1,0 +1,412 @@
+<html>
+    <head>
+<style>
+    body[theme="#light"] .themed {
+        background: #ffffff;
+        color: #000000;
+    }
+    body[theme="#dark"] .themed {
+        background: #202225;
+        color: #b9bbbe;
+    }
+    body[theme="#black"] .themed {
+        background: #000000;
+        color: #FFFFFF;
+    }
+    .hidden {
+        display: none;
+    }
+    #savePrompt {
+        width: 100%;
+    }
+    #canvasDiv {
+        padding: 10pt;
+    }
+    #outputDiv {
+        margin: 5pt;
+        padding: 2pt;
+        text-align: center;
+    }
+    #editDiv {
+        padding: 5pt;
+        margin: 5pt;
+    }
+    .inputFieldDiv {
+        margin: 5pt;
+    }
+    img.thumbnail {
+        height: 1em;
+        width: auto;
+    }
+
+</style>
+    </head>
+    <body theme="dark">
+        <div id="inputDiv">
+            <div class="inputFieldDiv">
+                <label>Profile Image File:</label>
+                <img class="thumbnail" id="customImg" />
+                <input type="file" id="imageLoader" name="imageLoader"/>
+            </div>
+            <div class="inputFieldDiv">
+                <label>Flag Image File:</label>
+                <img class="thumbnail" id="prideImg" />
+                <input type="file" id="flagLoader" name="flagLoader"/>
+            </div>
+            <div class="inputFieldDiv">
+                <label>Border size:</label>
+                <input type="number" min="0" max="0" step="1" value="0" id="insetSpinner" name="insetSpinner"> px
+            </div>
+            <div class="inputFieldDiv">
+                <label for="themeSelector">Preview theme:</label>
+                <select name="themeSelector" id="themeSelector">
+                    <option value="#dark">Dark</option>
+                    <option value="#light">Light</option>
+                    <option value="#black">Black</option>
+                </select>
+            </div>
+        </div>
+        <div id="editDiv" class="themed">
+            <p>Click on background areas in the image to remove them:</p>
+            <canvas id="fgCanvas"></canvas>
+            <div class="inputFieldDiv">
+                <input type="button" value="Reset" onclick="onCustomImageLoad();" title="Reset background areas"/>
+                <input type="button" value="Cleanup" onclick="cleanupPixels();" title="Remove small clusters of opaque pixels" />
+            </div>
+        </div>
+        <div id="outputDiv" class="themed">
+            <div id="canvasDiv">
+                <canvas id="imageCanvas"></canvas>
+                <canvas id="previewCanvas"></canvas>
+            </div>
+            <span id="savePrompt" class="hidden">Right click -&gt; Save image as...</span>
+        </div>
+
+        <script>
+
+var imageLoader = document.getElementById('imageLoader');
+    imageLoader.addEventListener('change', handleImage, false);
+var flagLoader = document.getElementById('flagLoader');
+    flagLoader.addEventListener('change', handleFlag, false);
+var insetSpinner = document.getElementById('insetSpinner');
+    insetSpinner.addEventListener('change', changeInset, false);
+var themeSelector = document.getElementById('themeSelector');
+    themeSelector.addEventListener('change', changeTheme, false);
+var savePrompt = document.getElementById("savePrompt");
+var canvas0 = document.getElementById('fgCanvas');
+var canvas1 = document.getElementById('imageCanvas');
+var canvas2 = document.getElementById('previewCanvas');
+
+function cleanupPixels() {
+    var ctx = canvas0.getContext('2d');
+    var imageData = ctx.getImageData(0, 0, canvas0.width, canvas0.height);
+    let transparent = [0, 0, 0, 0];
+
+    let pixelIndex = function(x, y) {
+        return y * 4 * canvas0.width + (x * 4);
+    }
+
+    let getPixel = function(x, y) {
+        let i = pixelIndex(x, y);
+        return [ imageData.data[i], imageData.data[i + 1], imageData.data[i + 2], imageData.data[i + 3] ];
+    }
+
+    let setPixel = function(x, y, colorData) {
+        let i = pixelIndex(x, y);
+        imageData.data[i] = colorData[0];
+        imageData.data[i + 1] = colorData[1];
+        imageData.data[i + 2] = colorData[2];
+        imageData.data[i + 3] = colorData[3];
+    }
+
+    let comparePixel = function(a, b) {
+        return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3];
+    }
+
+    let selected = [];
+
+    let coord2string = function(x, y) {
+        return `${x},${y}`;
+    }
+
+    let string2coord = function(s) {
+        return s.split(",").map(i => parseInt(i));
+    }
+
+    let maxIter = 128 * 128;
+    for (var cy = 0; cy < canvas0.height; cy++) {    
+        for (var cx = 0; cx < canvas0.width; cx++) {
+            let cp = getPixel(cx, cy);
+            let sxy = coord2string(cx, cy);
+            let isMatch = comparePixel(transparent, cp);
+            if (selected[sxy] === undefined) {
+                selected[sxy] = isMatch;
+            }
+            if (isMatch) {
+                // queue adjacent pixels
+                [ `${cx-1},${cy}`, `${cx+1},${cy}`, `${cx},${cy-1}`, `${cx},${cy+1}` ]
+                    .filter(s => {
+                        let [sx, sy] = string2coord(s);
+                        return sx >= 0 && sy >= 0 && sx < canvas0.width && sy < canvas0.height;
+                    })
+                    .forEach(s => selected[s] = true);
+                // console.log(cx, cy, clickedPixel, cp);
+            }
+        }
+    }
+    console.log(`selected ${selected.length} pixels`);
+
+    Object.keys(selected).forEach(s => {
+        if (selected[s]) {
+            let [cx, cy] = string2coord(s);
+            setPixel(cx, cy, transparent);
+        }
+    });
+
+    ctx.putImageData(imageData, 0, 0);
+    modifiedImg.src = canvas0.toDataURL();
+}
+
+function removePixels(x, y) {
+    var ctx = canvas0.getContext('2d');
+    var imageData = ctx.getImageData(0, 0, canvas0.width, canvas0.height);
+
+    let pixelIndex = function(x, y) {
+        return y * 4 * canvas0.width + (x * 4);
+    }
+
+    let getPixel = function(x, y) {
+        let i = pixelIndex(x, y);
+        return [ imageData.data[i], imageData.data[i + 1], imageData.data[i + 2], imageData.data[i + 3] ];
+    }
+
+    let setPixel = function(x, y, colorData) {
+        let i = pixelIndex(x, y);
+        imageData.data[i] = colorData[0];
+        imageData.data[i + 1] = colorData[1];
+        imageData.data[i + 2] = colorData[2];
+        imageData.data[i + 3] = colorData[3];
+    }
+
+    let comparePixel = function(a, b) {
+        return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3];
+    }
+
+    let clickedPixel = getPixel(x, y);
+    let selected = [];
+    let testQueue = [ `${x},${y}` ];
+
+    let coord2string = function(x, y) {
+        return `${x},${y}`;
+    }
+
+    let string2coord = function(s) {
+        return s.split(",").map(i => parseInt(i));
+    }
+
+    let maxIter = 128 * 128;
+
+    while (testQueue.length > 0 && maxIter-- > 0) {
+        let [cx, cy] = string2coord(testQueue.pop());
+        let cp = getPixel(cx, cy);
+        let sxy = coord2string(cx, cy);
+        let isMatch = comparePixel(clickedPixel, cp);
+        selected[sxy] = isMatch; // mark as selected
+        if (isMatch) {
+            // queue adjacent pixels
+            [ `${cx-1},${cy}`, `${cx+1},${cy}`, `${cx},${cy-1}`, `${cx},${cy+1}` ]
+                .filter(s => {
+                    let [sx, sy] = string2coord(s);
+                    return sx >= 0 && sy >= 0 && sx < canvas0.width && sy < canvas0.height;
+                })
+                .filter(s => selected[s] === undefined && !testQueue.includes(s))
+                .forEach(s => testQueue.unshift(s));
+            // console.log(cx, cy, clickedPixel, cp);
+        }
+    }
+    console.log(`selected ${selected.length} pixels`);
+    console.log(selected);
+
+    let transparent = [0, 0, 0, 0];
+    Object.keys(selected).forEach(s => {
+        if (selected[s]) {
+            let [cx, cy] = string2coord(s);
+            setPixel(cx, cy, transparent);
+        }
+    });
+
+    ctx.putImageData(imageData, 0, 0);
+    modifiedImg.src = canvas0.toDataURL();
+}
+
+{
+    var clickx = -1000, clicky = -1000;
+    var dragdistance = 64;
+    var mouseDown = false;
+
+    function onClickFG(event) {
+        let elem = canvas0;
+        var elemLeft = elem.offsetLeft + elem.clientLeft,
+            elemTop = elem.offsetTop + elem.clientTop;
+        var x = event.pageX - elemLeft,
+            y = event.pageY - elemTop;
+
+        if (Math.pow(x - clickx, 2) + Math.pow(y - clicky, 2) >= Math.pow(dragdistance, 2)) {
+            clickx = x;
+            clicky = y;
+            removePixels(x, y);
+        }
+    }
+
+    canvas0.addEventListener('mousedown', function(event) {
+        canvas0.getContext('2d').save();
+        onClickFG(event);
+        mouseDown = true;
+    }, false);
+    window.addEventListener('mouseup', function(event) {
+        mouseDown = false;
+        clickx = -1000;
+        clicky = -1000;
+    }, false);
+    canvas0.addEventListener('mousemove', function(event) {
+        if (mouseDown) {
+            onClickFG(event);
+        }
+    }, false);
+}
+
+// var ctx = new CanvasRenderingContext2D();
+
+let outputDiv = document.getElementById('outputDiv');
+
+var customImg = null;
+var prideImg = null;
+var inset = 0;
+var modifiedImg = new Image();
+
+modifiedImg.onload = function() {
+    if (prideImg != null) {
+        renderAll();
+    }
+}
+
+themeSelector.value = window.location.hash;
+changeTheme();
+
+function changeTheme() {
+    let theme = themeSelector.value;
+    document.body.setAttribute("theme", theme);
+    history.replaceState(undefined, undefined, theme);
+    //window.location.hash = theme;
+}
+
+function changeInset(event) {
+    inset = insetSpinner.value;
+    if (customImg != null && prideImg != null) {
+        renderAll();
+    }
+}
+
+function drawShadow(ctx) {
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+}
+
+function renderPreview(canvas) {
+    canvas.width = customImg.width;
+    canvas.height = customImg.height;
+    var ctx = canvas.getContext('2d');
+    let radius = Math.min(customImg.width, customImg.height) / 2;
+
+    // Create circular clipping region
+    ctx.beginPath();
+    ctx.arc(radius, radius, radius, 0, Math.PI * 2);
+    ctx.clip();
+    
+    ctx.drawImage(prideImg,0,0,customImg.width,customImg.height);
+
+    // Create circular clipping region
+    ctx.beginPath();
+    ctx.arc(radius, radius, radius - inset, 0, Math.PI * 2);
+    ctx.clip();
+
+    drawShadow(ctx);
+
+    ctx.drawImage(modifiedImg,0,0);
+}
+
+function renderPfp(canvas) {
+    canvas.width = customImg.width;
+    canvas.height = customImg.height;
+    let ctx = canvas.getContext('2d');
+    let radius = Math.min(customImg.width, customImg.height) / 2;
+
+    ctx.drawImage(prideImg,0,0,customImg.width,customImg.height);
+
+    // Create circular clipping region
+    ctx.beginPath();
+    ctx.arc(radius, radius, radius - inset, 0, Math.PI * 2);
+    ctx.clip();
+
+    drawShadow(ctx);
+
+    ctx.drawImage(modifiedImg,inset, inset, customImg.width - (inset * 2), customImg.height - (inset * 2));
+}
+
+function renderForeground(canvas) {
+    canvas.width = customImg.width;
+    canvas.height = customImg.height;
+    let ctx = canvas.getContext('2d');
+
+    ctx.drawImage(customImg,inset, inset, customImg.width - (inset * 2), customImg.height - (inset * 2));
+    modifiedImg.src = canvas0.toDataURL();
+}
+
+function renderAll() {
+    savePrompt.classList.remove("hidden");
+    renderPfp(canvas1);
+    renderPreview(canvas2);
+}
+
+function onPrideImageLoad() {
+    if (modifiedImg != null) {
+        renderAll();
+    }
+}
+
+function onCustomImageLoad() {
+    insetSpinner.max = Math.floor(customImg.width / 4);
+    renderForeground(canvas0);
+
+    // prideImg = new Image();
+    // prideImg.onload = onPrideImageLoad;
+    // prideImg.src = 'https://vectorflags.s3.amazonaws.com/flags/org-trans-square-01.png';
+}
+
+function handleFlag(e){
+    var reader = new FileReader();
+    reader.onload = function(event){
+        prideImg = new Image();
+        prideImg.onload = onPrideImageLoad;
+        prideImg.src = event.target.result;
+        document.getElementById("prideImg").src = prideImg.src;
+    }
+    reader.readAsDataURL(e.target.files[0]);     
+}
+
+function handleImage(e){
+    var reader = new FileReader();
+    reader.onload = function(event){
+        customImg = new Image();
+        customImg.onload = onCustomImageLoad;
+        customImg.src = event.target.result;
+        document.getElementById("customImg").src = customImg.src;
+    }
+    reader.readAsDataURL(e.target.files[0]);     
+}
+
+        </script>
+    </body>
+</html>
