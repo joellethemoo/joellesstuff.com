@@ -370,7 +370,7 @@ function renderPreview(canvas) {
 
     drawShadow(ctx);
 
-    ctx.drawImage(modifiedImg,0,0);
+    ctx.drawImage(modifiedImg,inset, inset, customImg.width - (inset * 2), customImg.height - (inset * 2));
 }
 
 function renderPfp(canvas) {
