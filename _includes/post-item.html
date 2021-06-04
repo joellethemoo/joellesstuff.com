@@ -1,0 +1,15 @@
+<li class="w3-bar">
+    <div class="w3-bar-item">
+        <span class="post-meta">{{ include.post.date | date: "%b %-d, %Y" }}</span>
+    </div>
+    <div class="w3-bar-item">
+        <h3 class="post-link">
+            <a href="{{ include.post.url | prepend: site.baseurl }}">{{ include.post.title }}</a>
+        </h3>
+    </div>
+    {% if include.post.thumbnail %}
+    <div class="w3-bar-item">
+        <img src="{{ include.post.thumbnail }}" class="post-thumbnail">
+    </div>
+    {% endif %}
+</li>

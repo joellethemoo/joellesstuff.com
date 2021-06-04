@@ -1,0 +1,189 @@
+---
+---
+
+// Our variables
+$base-font-family: Helvetica, Arial, sans-serif;
+$base-font-size:   16px;
+$small-font-size:  $base-font-size * 0.875;
+$base-line-height: 1.5;
+
+$spacing-unit:     30px;
+
+$text-color:       rgb(228, 228, 228);
+$background-color: #260042;
+$brand-color:      #2abde2;
+
+$grey-color:       #828282;
+$grey-color-light: lighten($grey-color, 40%);
+$grey-color-dark:  darken($grey-color, 25%);
+
+$figure-size:      220px;
+
+$on-palm:          600px;
+$on-laptop:        800px;
+
+
+// Using media queries with like this:
+// @include media-query($palm) {
+//     .wrapper {
+//         padding-right: $spacing-unit / 2;
+//         padding-left: $spacing-unit / 2;
+//     }
+// }
+@mixin media-query($device) {
+    @media screen and (max-width: $device) {
+        @content;
+    }
+}
+
+figure {
+    box-shadow: 0px 0px 5px grey;
+    display: flex;
+    flex-flow: column;
+    padding: 5px;
+    max-width: $figure-size;
+    margin: 0;
+    background-color: white;
+    border-radius: 5px;
+    
+    img {
+        max-height: $figure-size;
+        margin: auto;
+        padding: 0;
+    }
+
+    figcaption {
+        padding: 3px;
+        margin: 0;
+        text-align: center;
+    }
+
+    figcaption > * {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+}
+
+@import "base";
+@import "jekyll-theme-minimal";
+
+.w3-card-4 {
+    background-color: #eef;
+    color: #111;
+}
+
+.pop-on-hover:hover {
+    transform: scale(1.01);
+    transform-origin: center;
+}
+
+.thumbnail {
+    border-width: 0;
+    height: auto;
+    max-height: 150px;
+    max-width: 150px;
+    vertical-align: middle;
+    width: auto;
+}
+
+.post-list li .w3-bar-item {
+    float: none;
+    padding: 0;
+}
+
+.embed {
+    width: 100%;
+    height: 100vw;
+    max-height: 50vh;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.embed div {
+    width: 200%;
+    height: 200%;
+    transform: scale(0.5);
+    transform-origin: left top;
+}
+
+.iframe-container {
+    overflow: hidden;
+    // Calculated from the aspect ration of the content (in case of 16:9 it is 9/16= 0.5625)
+    padding-top: 56.25%;
+    position: relative;
+}
+
+.iframe-container iframe {
+    border: 0;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+figure.image {
+    figcaption {
+        background-color: #222;
+        color: #fff;
+        font: italic smaller sans-serif;
+    }
+}
+
+.site-nav li {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.logo {
+    max-width: 100%;
+}
+
+aside {
+    float: right;
+}
+
+.center-horizontal {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+code.center-horizontal {
+    display: block;
+    text-align: center;
+}
+
+.center-vertical {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.avatar {
+    width: 2em;
+    height: 2em;
+    border-radius: 0.75em;
+}
+
+header, footer {
+    > p {
+        border-radius: 6px;
+        padding: 5px;
+        background-color: darken($background-color, 3%);
+    }
+}
+
+ul.w3-card-4 {
+    border-radius: 5px;
+}
+
+.post-meta.date {
+    float: right;
+    font-size: small;
+}
+
+.project {
+    h1,h2,h3,h4,p,span {
+        margin-bottom: 2px;
+    }
+}

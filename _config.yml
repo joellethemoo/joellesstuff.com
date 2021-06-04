@@ -1,0 +1,20 @@
+# Site settings
+title: Joelle's Stuff
+description: > # this means to ignore newlines until "baseurl:"
+  Stuff by Joelle.
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://www.joellesstuff.com" # the base hostname & protocol for your site
+
+logo: /assets/images/moo.png
+theme: jekyll-theme-minimal
+
+# Build settings
+markdown: kramdown
+permalink: /:year/:title:output_ext
+
+defaults:
+  - scope:
+      path: "assets/images/flags"
+    values:
+      flagimage: true
+

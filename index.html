@@ -1,7 +1,31 @@
-<html>
-    <head>
-    </head>
-    <body>
-        <a href="pfp#dark">Pride PFP Generator</a>
-    </body>
-</html>
+---
+layout: default
+---
+
+<div class="home">
+
+  <h1 class="page-heading">All Posts</h1>
+
+  <ul class="post-list w3-ul w3-card-4">
+  {% for post in site.posts %}
+    <li class="w3-bar">
+        <div class="w3-bar-item">
+            <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        </div>
+        <div class="w3-bar-item">
+            <h3 class="post-link">
+                <a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+            </h3>
+        </div>
+        {% if post.thumbnail %}
+        <div class="w3-bar-item">
+            <img src="{{ post.thumbnail }}" class="thumbnail">
+        </div>
+        {% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+
+  <p class="rss-subscribe">subscribe <a href="{{ "feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
+
+</div>

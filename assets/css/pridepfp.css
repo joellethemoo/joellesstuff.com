@@ -1,0 +1,47 @@
+body[theme="#light"] .themed {
+    background: #ffffff;
+    color: #000000;
+}
+body .themed, body[theme="#dark"] .themed {
+    background: #202225;
+    color: #b9bbbe;
+}
+body[theme="#black"] .themed {
+    background: #000000;
+    color: #FFFFFF;
+}
+.hidden {
+    display: none;
+}
+#savePrompt {
+    width: 100%;
+}
+#canvasDiv {
+    padding: 10pt;
+}
+#outputDiv {
+    margin: 5pt;
+    padding: 2pt;
+    text-align: center;
+}
+#editDiv {
+    padding: 5pt;
+    margin: 5pt;
+    position: relative;
+    text-align: center;
+}
+#editDiv, #outputDiv {
+    filter: drop-shadow(0 0 3pt black);
+    margin-top: 10pt;
+}
+.inputFieldDiv {
+    margin: 5pt;
+    margin-top: 10pt;
+}
+img.thumbnail {
+    height: 1em;
+    width: auto;
+}
+label {
+    font-weight: bold;
+}
