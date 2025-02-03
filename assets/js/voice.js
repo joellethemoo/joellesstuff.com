@@ -49,3 +49,22 @@ function updateProgressBar() {
 }
 
 window.addEventListener('load', startRecording);
+
+// Ensure audio playback on the media device
+navigator.mediaDevices.enumerateDevices()
+    .then(devices => {
+        const mediaDevices = devices.filter(device => device.kind === 'audiooutput');
+        if (mediaDevices.length > 0) {
+            const deviceId = mediaDevices[0].deviceId;
+            audioPlayback.setSinkId(deviceId)
+                .then(() => {
+                    console.log('Audio playback set to media device');
+                })
+                .catch((error) => {
+                    console.error('Error setting audio playback device:', error);
+                });
+        }
+    })
+    .catch((error) => {
+        console.error('Error enumerating devices:', error);
+    });
