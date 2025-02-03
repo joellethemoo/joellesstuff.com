@@ -12,6 +12,7 @@ function showDebug(message) {
 }
 
 function setMediaDevice() {
+    showDebug('Setting media device');
     // Ensure audio playback on the media device
     navigator.mediaDevices.enumerateDevices()
     .then(devices => {
@@ -32,7 +33,7 @@ function setMediaDevice() {
     })
     .catch((error) => {
         console.error('Error enumerating devices:', error);
-        showDebug('Error enumerating devices:' + error);
+        showDebug('Error enumerating devices');
     });
 }
 
