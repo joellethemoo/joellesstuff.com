@@ -26,11 +26,13 @@ function setMediaDevice() {
                 })
                 .catch((error) => {
                     console.error('Error setting audio playback device:', error);
+                    showDebug('Failed to set audio device to ' + targetDevice.label);
                 });
         }
     })
     .catch((error) => {
         console.error('Error enumerating devices:', error);
+        showDebug('Error enumerating devices:' + error);
     });
 }
 
