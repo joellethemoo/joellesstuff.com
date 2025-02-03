@@ -1,10 +1,15 @@
 const audioPlayback = document.getElementById('audioPlayback');
 const progressBar = document.getElementById('progressBar');
+const debugOutput = document.getElementById('debugOutput');
 
 let mediaRecorder;
 let audioChunks = [];
 let recordingInterval;
 let progressInterval;
+
+function showDebug(message) {
+    debugOutput.textContent = message;
+}
 
 function setMediaDevice() {
     // Ensure audio playback on the media device
@@ -12,10 +17,12 @@ function setMediaDevice() {
     .then(devices => {
         const mediaDevices = devices.filter(device => device.kind === 'audiooutput');
         if (mediaDevices.length > 0) {
-            const deviceId = mediaDevices[0].deviceId;
+            const targetDevice =  mediaDevices[0];
+            const deviceId = targetDevice.deviceId;
             audioPlayback.setSinkId(deviceId)
                 .then(() => {
                     console.log('Audio playback set to media device');
+                    showDebug('Audio device set to ' + targetDevice.label);
                 })
                 .catch((error) => {
                     console.error('Error setting audio playback device:', error);
