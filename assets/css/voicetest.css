@@ -1,0 +1,12 @@
+#progressBarContainer {
+    width: 100%;
+    background-color: #f3f3f3;
+    border: 1px solid darkorange;
+    height: 2em;
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+    background-color: orange;
+}
