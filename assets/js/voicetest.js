@@ -6,6 +6,27 @@ let audioChunks = [];
 let recordingInterval;
 let progressInterval;
 
+function setMediaDevice() {
+    // Ensure audio playback on the media device
+    navigator.mediaDevices.enumerateDevices()
+    .then(devices => {
+        const mediaDevices = devices.filter(device => device.kind === 'audiooutput');
+        if (mediaDevices.length > 0) {
+            const deviceId = mediaDevices[0].deviceId;
+            audioPlayback.setSinkId(deviceId)
+                .then(() => {
+                    console.log('Audio playback set to media device');
+                })
+                .catch((error) => {
+                    console.error('Error setting audio playback device:', error);
+                });
+        }
+    })
+    .catch((error) => {
+        console.error('Error enumerating devices:', error);
+    });
+}
+
 async function startRecording() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
@@ -15,6 +36,7 @@ async function startRecording() {
     };
 
     mediaRecorder.onstop = () => {
+        setMediaDevice();
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
         audioPlayback.src = audioUrl;
@@ -49,22 +71,3 @@ function updateProgressBar() {
 }
 
 window.addEventListener('load', startRecording);
-
-// Ensure audio playback on the media device
-navigator.mediaDevices.enumerateDevices()
-    .then(devices => {
-        const mediaDevices = devices.filter(device => device.kind === 'audiooutput');
-        if (mediaDevices.length > 0) {
-            const deviceId = mediaDevices[0].deviceId;
-            audioPlayback.setSinkId(deviceId)
-                .then(() => {
-                    console.log('Audio playback set to media device');
-                })
-                .catch((error) => {
-                    console.error('Error setting audio playback device:', error);
-                });
-        }
-    })
-    .catch((error) => {
-        console.error('Error enumerating devices:', error);
-    });
