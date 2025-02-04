@@ -7,9 +7,12 @@ permalink: /voice/
 <link rel="stylesheet" href="/assets/css/voice.css">
 <h2>Practice your voice hands free</h2>
 <p>This page will record your voice for 10 seconds then play it back, on repeat.</p>
-<div id="progressBarContainer">
-    <div id="progressBar"></div>
+<div id="toolContainer">
+    <div id="progressBarContainer">
+        <div id="progressBar"></div>
+    </div>
+    <audio id="audioPlayback" controls></audio>
+    <button id="startButton">Press to begin</button>
 </div>
-<audio id="audioPlayback" controls></audio>
 
 <script src="/assets/js/voice.js"></script>
