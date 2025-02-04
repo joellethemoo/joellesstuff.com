@@ -71,12 +71,12 @@ async function startRecording() {
             progressBar.style.width = progressPerecent + '%';
         }
         if (loopTimer > timerLength) {
-            if (!isRecording) {
+            if (!isRecording && audioPlayback.paused) {
                 console.log("starting recording interval");
                 startMediaStream().then(() => {
                     console.log("startMediaStream.then");
-                    loopTimer = 0;
                 }).catch((error) => console.log("Error startMediaStream: ", error));
+                loopTimer = 0;
             } else {
                 if (!isDataAvailable && mediaRecorder.state == 'recording') {
                     mediaRecorder.stop();
