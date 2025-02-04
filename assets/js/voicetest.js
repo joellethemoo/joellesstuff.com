@@ -44,7 +44,7 @@ async function startMediaStream() {
     console.log("starting media recorder");
     mediaRecorder.start();
     isRecording = true;
-    updateProgressBar();
+    //updateProgressBar();
 }
 
 async function startRecording() {
@@ -54,6 +54,10 @@ async function startRecording() {
     const timerLength = 10000;
     recordingInterval = setInterval(() => {
         loopTimer = loopTimer + loopFrequency;
+        if (isRecording) {
+            let progressPerecent = Math.ceil(Math.min(100, loopTimer / timerLength * 100));
+            progressBar.style.width = progressPerecent + '%';
+        }
         if (loopTimer > timerLength) {
             if (!isRecording) {
                 console.log("starting recording interval");
@@ -75,7 +79,6 @@ async function startRecording() {
                     console.log("Loaded audio url: ", audioUrl);
                     audioPlayback.play();
                     audioChunks = [];
-                    progressBar.style.width = '0%';
 
                     isDataAvailable = false;
                     loopTimer = 0;
@@ -85,20 +88,6 @@ async function startRecording() {
     }, loopFrequency);
 
     startMediaStream();
-}
-
-function updateProgressBar() {
-    let width = 0;
-    console.log("Begin progress bar");
-    progressInterval = setInterval(() => {
-        if (width >= 100) {
-            console.log("End progress bar");
-            clearInterval(progressInterval);
-        } else {
-            width += 1;
-            progressBar.style.width = width + '%';
-        }
-    }, 100);
 }
 
 function stopMediaStream() {
