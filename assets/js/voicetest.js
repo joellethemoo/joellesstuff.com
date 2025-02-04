@@ -3,6 +3,7 @@ const progressBar = document.getElementById('progressBar');
 const debugOutput = document.getElementById('debugOutput');
 const startButton = document.getElementById('startButton');
 
+let mediaStream;
 let mediaRecorder;
 let audioChunks = [];
 let recordingInterval;
@@ -20,6 +21,17 @@ function showDebug(message) {
 
 async function startMediaStream() {
     isDataAvailable = false;
+
+    if (mediaRecorder != null) {
+        mediaRecorder.ondataavailable = (event) => {};
+        mediaRecorder.stop();
+        mediaRecorder = null;
+    }
+    if (mediaStream != null) {
+        stopMediaStream();
+        mediaStream = null;
+    }
+
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(mediaStream);
 
@@ -69,6 +81,7 @@ async function startRecording() {
                 if (!isDataAvailable && mediaRecorder.state == 'recording') {
                     mediaRecorder.stop();
                 } else if (isDataAvailable) {
+                    isRecording = false;
                     stopMediaStream();
 
                     console.log("playing back audio interval");
@@ -92,7 +105,6 @@ async function startRecording() {
 
 function stopMediaStream() {
     mediaStream.getTracks().forEach(track => track.stop());
-    isRecording = false;
     console.log("stopped media stream");
 }
 
