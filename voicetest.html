@@ -3,13 +3,15 @@ layout: page
 permalink: /voicetest/
 ---
 
-<link rel="stylesheet" href="/assets/css/voicetest.css">
+<link rel="stylesheet" href="/assets/css/voicetest.css?v=3">
 <h2>Practice your voice hands free</h2>
 <p>This page will record your voice for 10 seconds then play it back, on repeat.</p>
-<div id="progressBarContainer">
-    <div id="progressBar"></div>
+<div id="toolContainer">
+    <div id="progressBarContainer">
+        <div id="progressBar"></div>
+    </div>
+    <audio id="audioPlayback" controls></audio>
+    <button id="startButton">Press to begin</button>
 </div>
-<audio id="audioPlayback" controls></audio>
-<div id="debugOutput">Debug output here</div>
 
 <script src="/assets/js/voicetest.js?v=0.2"></script>

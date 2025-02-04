@@ -1,77 +1,98 @@
 const audioPlayback = document.getElementById('audioPlayback');
 const progressBar = document.getElementById('progressBar');
 const debugOutput = document.getElementById('debugOutput');
+const startButton = document.getElementById('startButton');
 
 let mediaRecorder;
 let audioChunks = [];
 let recordingInterval;
 let progressInterval;
+let isPaused = false;
+let isRecording = false;
+let isDataAvailable = false;
+let loopTimer = 0;
+
+let audioObjectLog = [];
 
 function showDebug(message) {
     debugOutput.textContent = message;
 }
 
-function setMediaDevice() {
-    showDebug('Setting media device');
-    // Ensure audio playback on the media device
-    navigator.mediaDevices.enumerateDevices()
-    .then(devices => {
-        const mediaDevices = devices.filter(device => device.kind === 'audiooutput');
-        if (mediaDevices.length > 0) {
-            const targetDevice =  mediaDevices[0];
-            const deviceId = targetDevice.deviceId;
-            audioPlayback.setSinkId(deviceId)
-                .then(() => {
-                    console.log('Audio playback set to media device');
-                    showDebug('Audio device set to ' + targetDevice.label);
-                })
-                .catch((error) => {
-                    console.error('Error setting audio playback device:', error);
-                    showDebug('Failed to set audio device to ' + targetDevice.label);
-                });
-        }
-    })
-    .catch((error) => {
-        console.error('Error enumerating devices:', error);
-        showDebug('Error enumerating devices');
-    });
-}
-
-async function startRecording() {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+async function startMediaStream() {
+    isDataAvailable = false;
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(mediaStream);
 
     mediaRecorder.ondataavailable = (event) => {
         audioChunks.push(event.data);
+        console.log("pushing audio: ", audioChunks);
+        isDataAvailable = true;
     };
 
-    mediaRecorder.onstop = () => {
-        setMediaDevice();
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        audioPlayback.src = audioUrl;
-        audioPlayback.play();
-        audioChunks = [];
-        progressBar.style.width = '0%';
+    mediaRecorder.onstart = (event) => {
+        console.log("media recorder onstart");
     };
 
-    recordingInterval = setInterval(() => {
-        if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-        } else {
-            mediaRecorder.start();
-            updateProgressBar();
-        }
-    }, 10000);
+    mediaRecorder.onstop = (event) => {
+        console.log("media recorder onstop");
+    };
 
+    mediaRecorder.onerror = (event) => {
+        console.log("media recorder error: ", event.error);
+    }
+
+    console.log("starting media recorder");
     mediaRecorder.start();
+    isRecording = true;
     updateProgressBar();
+}
+
+async function startRecording() {
+    startButton.style.display = 'none';
+
+    const loopFrequency = 100;
+    const timerLength = 10000;
+    recordingInterval = setInterval(() => {
+        loopTimer = loopTimer + loopFrequency;
+        if (loopTimer > timerLength) {
+            if (!isRecording) {
+                console.log("starting recording interval");
+                startMediaStream().then(() => {
+                    console.log("startMediaStream.then");
+                    loopTimer = 0;
+                }).catch((error) => console.log("Error startMediaStream: ", error));
+            } else {
+                if (!isDataAvailable && mediaRecorder.state == 'recording') {
+                    mediaRecorder.stop();
+                } else if (isDataAvailable) {
+                    stopMediaStream();
+
+                    console.log("playing back audio interval");
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioObjectLog.push(audioUrl);
+                    audioPlayback.src = audioUrl;
+                    console.log("Loaded audio url: ", audioUrl);
+                    audioPlayback.play();
+                    audioChunks = [];
+                    progressBar.style.width = '0%';
+
+                    isDataAvailable = false;
+                    loopTimer = 0;
+                }
+            }
+        }
+    }, loopFrequency);
+
+    startMediaStream();
 }
 
 function updateProgressBar() {
     let width = 0;
+    console.log("Begin progress bar");
     progressInterval = setInterval(() => {
         if (width >= 100) {
+            console.log("End progress bar");
             clearInterval(progressInterval);
         } else {
             width += 1;
@@ -80,4 +101,10 @@ function updateProgressBar() {
     }, 100);
 }
 
-window.addEventListener('load', startRecording);
+function stopMediaStream() {
+    mediaStream.getTracks().forEach(track => track.stop());
+    isRecording = false;
+    console.log("stopped media stream");
+}
+
+startButton.addEventListener('click', startRecording);
